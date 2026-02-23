@@ -4,7 +4,7 @@ description: Run this to generate or update documentation on any nodes found in 
 agent: 'agent'
 ---
 
-Locate all ros2 nodes in both python and c++ files in the current directory. Prepare documentation for each node. The documentation should be in a folder doc/Nodes/ relative to the package.xml file for each ros2 package. There should be one .md markdown file per node, with the name of the file matching the node name. Documentation for the node should include:
+Locate all ros2 nodes in both python and c++ files in the current directory. Prepare documentation for each node. The documentation should be in a folder 'Nodes/<package name>/' relative to the directory from which this prompt is invoked — NOT relative to the package directory or any subdirectory of it. There should be one .md markdown file per node, with the name of the file matching the node name. Documentation for the node should include:
 
 - node name
 - after the node name, in italics 'This file is ai generated and may contain mistakes. If you edit this file, remove this notice to prevent rewriting by ai.'
@@ -18,7 +18,7 @@ Additional instructions:
 - if the default value is a C++ constant, find the literal value of that constant. Do no just show the constant name.
 - if the documentation already exists, review it and update if appropriate. But do not modify the file if it contains the text "file is ai generated"
 
-In addition to the markdown file, in the same directory create a .json file, with the name of the file matching the node name. The json file should match the following schema per https://json-schema.org/draft/2020-12/schema:
+In addition to the markdown file, create a .json file in the same 'Nodes/<package name>/' directory (relative to the prompt invocation directory, not the package directory), with the name of the file matching the node name. The json file should match the following schema per https://json-schema.org/draft/2020-12/schema:
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "http://ros.org/schemas/node_doc.json",
