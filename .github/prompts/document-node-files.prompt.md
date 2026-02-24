@@ -14,17 +14,54 @@ This prompt requires one argument: the path to a JSON index file produced by `sc
 
 If no path is supplied, look for a JSON file in the current working directory whose name ends in `.json` and which contains the expected array structure.
 
-## Step 1 — Read source files and identify nodes
+## Step 0 — Initialize local temporary directory
 
-For each package in the JSON array, read the files listed in `node_files` (as absolute paths constructed from `package_dir` + the relative path). These are the primary files to read.
+Create a `./tmp` directory in the current workspace if it doesn't exist. Use this directory for all temporary files instead of `/tmp` to avoid permission dialog requests.
+
+## Step 1 — Batch nodes into groups of 10
+
+Analyze the JSON input and group all nodes by package. Create a list of batches where each batch contains up to 10 nodes with their package information. Store this batch list in `./tmp/node_batches.json`.
+
+**Subagent Task Delegation:**
+For each batch, invoke a subagent with the following instruction. Do NOT wait for detailed responses or maintain extensive back-and-forth interaction:
+
+```
+You are responsible for documenting a batch of ROS2 nodes and writing their markdown and JSON files.
+
+Input batch (JSON): [BATCH_DATA]
+
+For each node in this batch:
+1. Use terminal commands to read source files from /srv/repos/rolling and workspace files
+2. Extract node definitions, interfaces (publishers/subscribers/services), and parameters
+3. Generate markdown file: Nodes/<package>/<node>.md with template:
+   - Node name, ai-generated notice, description
+   - Only include Publisher/Subscriber/Service/Action sections if populated
+   - Parameters with defaults and types
+   - Example: ros2 run <package> <node>
+4. Generate JSON file: Nodes/<package>/<node>.json matching http://ros.org/schemas/node_doc.json schema:
+   - name, summary (30-100 chars), overview (110-300 chars)
+   - repo, package, parameters, interfaces arrays
+5. Use mkdir -p for directory creation
+6. Return single line: "BATCH_COMPLETE: X nodes documented in Y packages"
+
+Work autonomously. Minimize output. No intermediate feedback needed.
+```
+
+Collect results from each subagent batch task. Only report summary statistics once all batches complete.
+
+## Step 2 — Read source files and identify nodes (Subagent Task)
+
+For each node in the batch, read the files listed in `node_files` (as absolute paths constructed from `package_dir` + the relative path). These are the primary files to read.
 
 **IMPORTANT: To avoid permission dialog requests when reading files outside the workspace, use terminal commands (e.g. `cat`, `grep`) via `run_in_terminal` instead of file read tools. This prevents VS Code from requesting file access permissions.**
+
+**IMPORTANT: Do not try to write to the /tmp directory. Use the `./tmp` directory in the current workspace for any temporary files needed during processing.**
 
 If those files alone do not provide enough information to fully document a node (e.g. the class body is in a separate `.cpp` implementation file, parameters are declared in a utility header, or entry point names are in `setup.py` / `CMakeLists.txt`), read the additional files needed. Limit supplementary reads to files that are directly referenced (e.g. `#include` directives, Python imports) or that have standard names in the package (`setup.py`, `CMakeLists.txt`, `package.xml`).
 
 Identify all nodes defined across the listed files. A single source file may define more than one node class.
 
-## Step 2 — Write documentation
+## Step 3 — Write documentation (Subagent Task)
 
 The documentation should be in a folder `Nodes/<package name>/` relative to the directory from which this prompt is invoked — NOT relative to the package directory or any subdirectory of it. There should be one `.md` markdown file per node, with the name of the file matching the node name. Documentation for each node should include:
 
@@ -40,7 +77,7 @@ Additional instructions for the markdown file:
 - If a default value is a C++ constant or macro, find the literal value of that constant — do not just show the constant name.
 - If an `.md` file already exists for a node, read it and compare it against the current source code. Update any fields that are inaccurate or incomplete. However, if the file contains the text "file is ai generated", do not modify it regardless of accuracy.
 
-## Step 3 — Write JSON documentation files
+## Step 4 — Write JSON documentation files (Subagent Task)
 
 In addition to the markdown file, create a `.json` file in the same `Nodes/<package name>/` directory (relative to the prompt invocation directory, not the package directory), with the name of the file matching the node name. The json file should match the following schema per https://json-schema.org/draft/2020-12/schema:
 
@@ -130,4 +167,21 @@ In addition to the markdown file, create a `.json` file in the same `Nodes/<pack
 }
 ```
 
-If the `.json` file already exists and contains a top-level field `"donotmodify"` with the value `"true"`, do not change it. Otherwise, read the existing file and update it if needed to reflect the correct current values.
+
+## Step 5 — Consolidate Results and Report Summary
+
+After all subagent batches have completed:
+
+1. Count total nodes documented across all batches
+2. Count total packages touched
+3. Update or create `./tmp/documentation_manifest.json` with:
+   - timestamp of completion
+   - total_batches_processed
+   - total_nodes_documented
+   - total_packages_processed
+   - batch_results (array of completion messages)
+4. Report final summary: "**DOCUMENTATION COMPLETE:** X nodes documented across Y packages in Z batches"
+
+This final step ensures visibility into the complete documentation run without maintaining excessive context about individual batch details.
+
+````
