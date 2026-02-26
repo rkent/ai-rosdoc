@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(/srv/disks/data1/repos/**)"
+    ],
+    "additionalDirectories": [
+      "/srv/disks/data1/repos",
+      "/home/kent/github/rkent/ai-rosdoc/repos",
+      "/home/kent/github/rkent/ai-rosdoc/tmp"
+    ]
+  }
+}

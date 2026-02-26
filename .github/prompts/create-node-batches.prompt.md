@@ -1,6 +1,7 @@
+````prompt
 ---
-name: Document Node Files
-description: Batch a JSON node index and invoke subagents to document each batch.
+name: Create Node Batches
+description: Read a JSON node index and write batch files to ./tmp for later subagent processing.
 agent: 'agent'
 ---
 
@@ -18,10 +19,11 @@ If no path is supplied, look for a JSON file in the current working directory wh
 
 Create a `./tmp` directory in the current workspace if it doesn't exist. Use this directory for all temporary files instead of `/tmp` to avoid permission dialog requests.
 
-## Step 1a — Create batch files
+## Step 1 — Create batch files
 
-Follow the instructions in `.github/prompts/create-node-batches.prompt.md` to read the JSON index and write `./tmp/batch_NNN.json` files. Note the `BATCH_RANGE` reported on completion.
+Analyze the JSON input and group entries by package. Create batches of up to 10 entries each. For each batch N (1-based, zero-padded to 3 digits), write the batch array to `./tmp/batch_NNN.json`.
 
-## Step 1b — Execute subagents on batch files
-
-Follow the instructions in `.github/prompts/execute-node-batches.prompt.md`, passing the full batch range reported in Step 1a as `BATCH_START` and `BATCH_END`. That prompt handles subagent execution, manifest update, and final summary reporting.
+After writing all batch files, report:
+- The total number of batch files created (e.g. `BATCHES_CREATED: 42`)
+- The range of batch numbers (e.g. `BATCH_RANGE: 001–042`)
+````
