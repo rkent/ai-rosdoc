@@ -43,7 +43,13 @@ def find_packages_without_readme(search_dir: str):
     directories (containing package.xml) that have no README file and whose
     parent is not named 'test' or 'tests'.
     """
+    seen_real: set[str] = set()
     for dirpath, dirnames, filenames in os.walk(search_dir, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in seen_real:
+            dirnames.clear()
+            continue
+        seen_real.add(real)
         if "package.xml" in filenames:
             if not parent_is_test_dir(dirpath) and not has_readme(dirpath):
                 yield os.path.abspath(dirpath)

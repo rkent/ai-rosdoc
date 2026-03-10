@@ -12,11 +12,9 @@ A batch JSON array. Each element has:
 - `package_dir` — absolute path to the directory that contains `package.xml`
 - `node_files` — list of source file paths (relative to `package_dir`) in which node definitions were detected
 
-If no batch data is supplied inline, look for a JSON file passed as an argument or in `./tmp/` whose name matches `batch_*.json`.
-
 ## Step 1 — Read source files and identify nodes
 
-For each entry in the batch, read the files listed in `node_files` (as absolute paths constructed from `package_dir` + the relative path).
+For each entry in the batch, read the files listed in `node_files` (as absolute paths constructed from `package_dir` + the relative path). The working directory for all file reads is the `package_dir` of the current batch entry.
 
 **IMPORTANT: To avoid permission dialog requests when reading files outside the workspace, use terminal commands (e.g. `cat`, `grep`) via `run_in_terminal` instead of file read tools. This prevents VS Code from requesting file access permissions.**
 
@@ -74,4 +72,8 @@ If validation fails, examine the errors, correct the JSON file, and re-validate.
 
 ## Return
 
-Return a single line: `BATCH_COMPLETE: X nodes documented in Y packages`
+Your **entire** response must be exactly one line and nothing else:
+
+`BATCH_COMPLETE: X nodes documented in Y packages`
+
+Do not include any other text, summaries, lists, confirmations, or explanations. Only that single line.

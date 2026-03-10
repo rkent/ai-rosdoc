@@ -98,7 +98,13 @@ def has_ros2_node(directory: str) -> "str | None":
       - Direct construction via ``std::make_shared<rclcpp::Node>``,
         ``rclcpp::Node::make_shared()``, or ``new rclcpp::Node(``.
     """
+    seen_real: set[str] = set()
     for dirpath, dirnames, filenames in os.walk(directory, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in seen_real:
+            dirnames.clear()
+            continue
+        seen_real.add(real)
         # Prune test directories so os.walk never descends into them
         dirnames[:] = [d for d in dirnames if d.lower() not in ("test", "tests")]
         for filename in filenames:
@@ -135,7 +141,13 @@ def find_node_packages(search_dir: str):
     ``node_file`` is the absolute path of the first source file detected as
     defining a node.
     """
+    seen_real: set[str] = set()
     for dirpath, _dirnames, filenames in os.walk(search_dir, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in seen_real:
+            _dirnames.clear()
+            continue
+        seen_real.add(real)
         if "package.xml" in filenames:
             if not parent_is_test_dir(dirpath):
                 node_file = has_ros2_node(dirpath)

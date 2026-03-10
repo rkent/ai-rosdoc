@@ -85,7 +85,14 @@ def find_node_files(package_dir: str) -> list[str]:
     pruned to avoid false positives from test code.
     """
     node_files: list[str] = []
+    print(f"Scanning package: {package_dir}")
+    seen_real: set[str] = set()
     for dirpath, dirnames, filenames in os.walk(package_dir, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in seen_real:
+            dirnames.clear()
+            continue
+        seen_real.add(real)
         # Prune test directories in-place
         dirnames[:] = [d for d in dirnames if d.lower() not in ("test", "tests")]
         for filename in sorted(filenames):
@@ -134,7 +141,13 @@ def find_node_packages(search_dir: str, max_packages: int | None = None):
     search_dir = os.path.abspath(search_dir)
     count = 0
 
+    seen_real: set[str] = set()
     for dirpath, dirnames, filenames in os.walk(search_dir, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in seen_real:
+            dirnames.clear()
+            continue
+        seen_real.add(real)
         if "package.xml" not in filenames:
             continue
 

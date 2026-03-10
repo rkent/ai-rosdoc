@@ -22,7 +22,7 @@
           "name":    { "type": "string" },
           "type":    { "type": "string" },
           "default": { "type": "string" },
-          "summary": { "type": "string", "minLength": 20, "maxLength": 80 }
+          "summary": { "type": "string", "minLength": 30, "maxLength": 100 }
         }
       }
     },
@@ -39,7 +39,7 @@
           },
           "topic":   { "type": "string" },
           "mtype":   { "type": "string" },
-          "summary": { "type": "string", "minLength": 20, "maxLength": 80 }
+          "summary": { "type": "string", "minLength": 30, "maxLength": 100 }
         }
       }
     }

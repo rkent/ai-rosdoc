@@ -7,12 +7,13 @@ agent: 'agent'
 
 ## Inputs
 
-This prompt requires two arguments specifying the range of batch files to process:
+This prompt requires three arguments specifying the range of batch files to process:
 
 - `BATCH_START` — first batch number to process (1-based, e.g. `1`)
 - `BATCH_END` — last batch number to process (inclusive, e.g. `42`)
+- `BATCH_ROOT` (optional) — directory in which batch files are located; defaults to `./tmp`
 
-If these are not supplied, process all `./tmp/batch_NNN.json` files that exist.
+If these are not provided, ask.
 
 The workspace root is the current working directory unless explicitly provided.
 
