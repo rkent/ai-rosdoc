@@ -1,0 +1,10 @@
+[
+  {
+    "package": "magnetometer_compass",
+    "package_dir": "/home/kent/github/rkent/ai-rosdoc/repos/rolling/compass/magnetometer_compass",
+    "node_files": [
+      "include/magnetometer_compass/magnetometer_compass_nodelet.hpp",
+      "include/magnetometer_compass/visualize_azimuth_nodelet.hpp"
+    ]
+  }
+]
